@@ -14,7 +14,7 @@
 
 /*Compile instructions
  * windows: g++ -Wall -o calc_loads.exe -std=c++17 LoadCalc.cpp
- * linux  : g++ -Wall -o calc_loads.exe -std=c++17 LoadCalc.cpp -lstdc++fs
+ * linux  : g++ -Wall -o calc_loads -std=c++17 LoadCalc.cpp -lstdc++fs
  * 
  * Examples - note directory structure.
  * windows: calc_loads Dir:H:\CFD\sandpit2\loads\t0170\
