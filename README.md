@@ -7,7 +7,7 @@ Currently under development.
 
 ## Compile instructions
 * windows: g++ -Wall -o calc_loads.exe -std=c++17 LoadCalc.cpp
-* linux  : g++ -Wall -o calc_loads.exe -std=c++17 LoadCalc.cpp -lstdc++fs
+* linux  : g++ -Wall -o calc_loads -std=c++17 LoadCalc.cpp -lstdc++fs
  
 ## Examples - note directory structure.
 
