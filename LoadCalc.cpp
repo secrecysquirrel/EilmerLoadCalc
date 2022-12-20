@@ -14,13 +14,7 @@
 
 /*Compile instructions
  * windows: g++ -Wall -o calc_loads.exe -std=c++17 LoadCalc.cpp
- * linux  : g++ -Wall -o calc_loads -std=c++17 LoadCalc.cpp -lstdc++fs
- * 
- * Examples - note directory structure.
- * windows: calc_loads Dir:H:\CFD\sandpit2\loads\t0170\
- *          calc_loads Dir:H:\CFD\sandpit2\loads\t0170\ File:<output file name>
- *          calc_loads Dir:H:\CFD\sandpit2\loads\t0170\ File:<output file name> Type:linear
- * linux  : ./calc_loads Dir:/home/aaron/CFD/sandpit2/loads/t0170/
+ * linux  : g++ -Wall -o calc_loads -std=c++17 LoadCalc.cpp -lstdc++fs  
  */
 
 
@@ -28,6 +22,8 @@
 using namespace std;
 
 float Import_Data_Line(string &_line);
+void Help_Function();
+
 
 int main(int argc, char** argv) {    
     
@@ -53,12 +49,13 @@ int main(int argc, char** argv) {
 
     };
     vector<data_point> data_point_vector;   //vector is filled with ALL data points from all dat files in directory
-    float force_body_x = 0;                 //sum of all forces on body
-    float force_body_y = 0;
-    float force_body_z = 0;
-    float q_total_body = 0;
-
-
+    float force_body_x  = 0;                 //sum of all forces on body
+    float force_body_y  = 0;
+    float force_body_z  = 0;
+    float q_total_body  = 0;
+    float free_stream_rho           = 0;
+    float free_stream_speed         = 0;
+    bool calc_Cd        = 0;
 
 //Input args and error check
     for (int i=0;i<argc;++i){
@@ -66,27 +63,42 @@ int main(int argc, char** argv) {
        main_config_map[string(argv[i]).substr(0,location)]=string(argv[i]).substr(location+1);
     }  
 
-    if(main_config_map.count("Dir")){
-        directory = main_config_map["Dir"];
-    }else{
-        cout<<"Error - no Dir.  add Dir:<path to directory>\n";
+    if(main_config_map.count("help")){
+        Help_Function();
         return 0;
     }
 
-    if(main_config_map.count("File")){
-        output_file_name = main_config_map["File"];
+    if(main_config_map.count("dir")){
+        directory = main_config_map["dir"];
     }else{
-        cout<<"No output file nominated - default output to calculated_loads.txt\n";
+        cout<<"Error - no Dir.  add Dir:<full path to directory>\n"<<" add help to command for examples\n";
+        return 0;
+    }
+
+    if(main_config_map.count("file")){
+        output_file_name = main_config_map["file"];
+    }else{
+        cout<<"Warning - No output file nominated - default output to calculated_loads.txt\nSet file:<filename> if require different output file.\n\n";
         output_file_name = "calculated_loads.txt";        
     }
 
-    if(main_config_map.count("Type")){                
-        if(main_config_map["Type"]=="linear"){
-            cout<<"linear Problem, y load calculated\ncalculated forces are per m\n";
+    if(main_config_map.count("type")){                
+        if(main_config_map["type"]=="linear"){
+            cout<<"Linear problem, y load calculated\ncalculated forces are per m\n";
             radial = 0;
         };
     }else{
-        cout<<"axisymmetric problem, setting y and z loads to 0.\n";               
+        cout<<"Axisymmetric problem, setting y and z loads to 0.\n";               
+    }
+
+//parameters for Cd
+    if(!main_config_map.count("rho") || !main_config_map.count("speed")){                
+        cout<<"\nWarning - rho: and speed: not set - Cd not calculated - set rho:XXXe-x speed:XXX for Cd calc.\n"; 
+    }else{
+        free_stream_rho   = stof(main_config_map["rho"]);
+        free_stream_speed = stof(main_config_map["speed"]);
+        calc_Cd = 1;
+        cout<<"\nCd calculated with rho:"<<free_stream_rho<<"  speed:"<<free_stream_speed<<"\n";;              
     }
 
 
@@ -172,9 +184,9 @@ int main(int argc, char** argv) {
         q_total_body *= -2*pi;  //q_total is calculated on gas - gas losing heat = body gaining heat
     }  
 
-    cout<<"Force x :"<< force_body_x<<
-        "\nForce y :"<<force_body_y<<
-        "\nForce z :"<<force_body_z<<endl; 
+    cout<<"Force x (N):"<<force_body_x<<
+        "\nForce y (N):"<<force_body_y<<
+        "\nForce z (N):"<<force_body_z<<endl; 
 //Output loads to file
     ofstream output_file(directory+output_file_name);
     output_file<<"Directory:\n    "<<directory<<endl<<endl;
@@ -190,20 +202,27 @@ int main(int argc, char** argv) {
                "\n\nCalculated body heat (w) :"<<q_total_body;
 
 
-//experimental - calc drag coeff for radial
-    float frontal_area = 0;
-    float coeff_drag = 0;
-    float free_stream_rho = 0.00044294877545892;    //TODO - add this to the args
-    float free_stream_speed = 14000;                //TODO - add this to the args
+//calc drag coeff for radial - linear not sorted
+    if(calc_Cd){
+        float frontal_area = 0;
+        float coeff_drag = 0;
+        //free_stream_rho = 3.709e-05;    //TODO - add this to the args
+        //free_stream_speed = 9000;                //TODO - add this to the args
 
-    for (int i=0;i<data_point_vector.size(); ++i){            
-        if(data_point_vector.at(i).nx>0){
-            frontal_area+=data_point_vector.at(i).area*data_point_vector.at(i).nx;
+        for (int i=0;i<data_point_vector.size(); ++i){            
+            if(data_point_vector.at(i).nx>0){
+                frontal_area+=data_point_vector.at(i).area*data_point_vector.at(i).nx;
+            }
         }
+        frontal_area *= 2*pi;
+        coeff_drag = force_body_x/(free_stream_rho*frontal_area*pow(free_stream_speed,2));
+        cout<<"Drag Coefficient:\n"<<  
+              "   body frontal area    m2:"<<frontal_area<<"\n"<<
+              "   free stream rho   kg/m3:"<<free_stream_rho<<"\n"<<
+              "   free stream speed   m/s:"<<free_stream_speed<<"\n"<<
+              "   calculated Cd          :"<<coeff_drag<<"\n";
     }
-    frontal_area *= 2*pi;
-    coeff_drag = force_body_x/(free_stream_rho*frontal_area*pow(free_stream_speed,2));
-    cout<<"Drag Coeff:"<<coeff_drag<<"\narea:"<<frontal_area<<"\n";
+
 
 }
 
@@ -219,4 +238,23 @@ float Import_Data_Line(string &_line){
     _line.erase(0, _location + _delimiter.length());
     return _output;
 
+}
+
+
+
+void Help_Function(){
+    cout<<  "Instructions\n\n"<<
+            "Required args:\n"<<
+            "     dir:<full path to directory>     All .dat files in this directory will be summed\n"<<
+            "Optional args:\n"<<
+            "     file:<output file name>          This sets a different output file name to the default\n"<<
+            "     type:linear                      Setting this to linear calculates force on linear body per m.  Default is radial\n"<<
+            "     rho:<XXXe-XX>                    units kg/m3 - Setting this and speed initiates Cd calc.  If either is not set Cd no calc'd\n"<<
+            "     speed:<XXXX>                     units m/s\n\n"
+            "Examples- note directory structure:\n"<<
+            "     windows: calc_loads dir:H:\\CFD\\sandpit2\\loads\\t0170\\ \n"<<
+            "              calc_loads dir:H:\\CFD\\sandpit2\\loads\\t0170\\ file:newfilename.txt \n"<<
+            "              calc_loads dir:H:\\CFD\\sandpit2\\loads\\t0170\\ file:somefilename.txt type:linear\n"<<
+            "              calc_loads dir:H:\\CFD\\sandpit2\\loads\\t0170\\ rho:3.7e-5 speed:9000\n\n"<<
+            "     linux  : ./calc_loads dir:/home/aaron/CFD/sandpit2/loads/t0170/ \n";
 }
