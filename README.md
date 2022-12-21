@@ -5,8 +5,8 @@ Currently under development.
 outputs loads to a txt file and console
 
 ## Compile instructions
-* windows: g++ -Wall -o calc_loads.exe -std=c++17 LoadCalc.cpp
-* linux  : g++ -Wall -o calc_loads -std=c++17 LoadCalc.cpp -lstdc++fs
+* windows: g++ -Wall -o LoadCalc.exe -std=c++17 LoadCalc.cpp
+* linux  : g++ -Wall -o LoadCalc -std=c++17 LoadCalc.cpp -lstdc++fs
  
 ## Examples - note directory structure.
 
