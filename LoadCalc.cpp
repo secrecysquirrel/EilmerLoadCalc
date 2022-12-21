@@ -206,21 +206,25 @@ int main(int argc, char** argv) {
     if(calc_Cd){
         float frontal_area = 0;
         float coeff_drag = 0;
+        int num_calc = 0;
         //free_stream_rho = 3.709e-05;    //TODO - add this to the args
         //free_stream_speed = 9000;                //TODO - add this to the args
 
         for (int i=0;i<data_point_vector.size(); ++i){            
             if(data_point_vector.at(i).nx>0){
-                frontal_area+=data_point_vector.at(i).area*data_point_vector.at(i).nx;
+                frontal_area+=data_point_vector.at(i).area*data_point_vector.at(i).nx;                
+                
             }
+
         }
         frontal_area *= 2*pi;
-        coeff_drag = force_body_x/(free_stream_rho*frontal_area*pow(free_stream_speed,2));
+        coeff_drag = 2*force_body_x/(free_stream_rho*frontal_area*pow(free_stream_speed,2));
         cout<<"Drag Coefficient:\n"<<  
               "   body frontal area    m2:"<<frontal_area<<"\n"<<
               "   free stream rho   kg/m3:"<<free_stream_rho<<"\n"<<
               "   free stream speed   m/s:"<<free_stream_speed<<"\n"<<
               "   calculated Cd          :"<<coeff_drag<<"\n";
+        
     }
 
 
