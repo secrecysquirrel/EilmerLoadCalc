@@ -1,0 +1,27 @@
+Directory:
+    C:\CFD\Orion_005_base\loads\t0533\
+
+Body forces summation from files:
+File 1 : b0004.bc0001.t0533.loads.dat
+File 2 : b0005.bc0001.t0533.loads.dat
+File 3 : b0006.bc0001.t0533.loads.dat
+File 4 : b0007.bc0001.t0533.loads.dat
+File 5 : b0022.bc0002.t0533.loads.dat
+File 6 : b0029.bc0002.t0533.loads.dat
+File 7 : b0036.bc0002.t0533.loads.dat
+File 8 : b0043.bc0001.t0533.loads.dat
+File 9 : b0043.bc0002.t0533.loads.dat
+File 10 : b0044.bc0001.t0533.loads.dat
+File 11 : b0045.bc0001.t0533.loads.dat
+File 12 : b0046.bc0001.t0533.loads.dat
+File 13 : b0047.bc0001.t0533.loads.dat
+File 14 : b0048.bc0001.t0533.loads.dat
+File 15 : b0049.bc0001.t0533.loads.dat
+
+
+Calculated body loads:
+     X (N) :530.606
+     Y (N) :0
+     Z (N) :0
+
+Calculated body heat (w) :-0
