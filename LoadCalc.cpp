@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
     float free_stream_rho           = 0;
     float free_stream_speed         = 0;
     bool calc_Cd        = 0;
+    float average_p     = 0;
 
 //Input args and error check
     for (int i=0;i<argc;++i){
@@ -168,13 +169,14 @@ int main(int argc, char** argv) {
         //cout<<"posx "<<data_point_vector.at(i).posx<<"posy "<<data_point_vector.at(i).posy<<endl;   
         //cout<<"qtotal "<<data_point_vector.at(i).qtotal<<"pressure "<<data_point_vector.at(i).pressure<<endl; 
         data_point_vector.at(i).force_total = data_point_vector.at(i).area*data_point_vector.at(i).pressure;
-        data_point_vector.at(i).force_x     = data_point_vector.at(i).force_total*data_point_vector.at(i).nx;
-        data_point_vector.at(i).force_y     = data_point_vector.at(i).force_total*data_point_vector.at(i).ny;
-        data_point_vector.at(i).force_z     = data_point_vector.at(i).force_total*data_point_vector.at(i).nz;
+        data_point_vector.at(i).force_x     = data_point_vector.at(i).force_total*data_point_vector.at(i).nx*data_point_vector.at(i).outsign;
+        data_point_vector.at(i).force_y     = data_point_vector.at(i).force_total*data_point_vector.at(i).ny*data_point_vector.at(i).outsign;
+        data_point_vector.at(i).force_z     = data_point_vector.at(i).force_total*data_point_vector.at(i).nz*data_point_vector.at(i).outsign;
         force_body_x += data_point_vector.at(i).force_x;
         force_body_y += data_point_vector.at(i).force_y;
         force_body_z += data_point_vector.at(i).force_z;
         q_total_body += data_point_vector.at(i).qtotal*data_point_vector.at(i).area;
+       
     }
 
     if(radial){
@@ -210,20 +212,27 @@ int main(int argc, char** argv) {
         //free_stream_rho = 3.709e-05;    //TODO - add this to the args
         //free_stream_speed = 9000;                //TODO - add this to the args
 
-        for (int i=0;i<data_point_vector.size(); ++i){            
-            if(data_point_vector.at(i).nx>0){
-                frontal_area+=data_point_vector.at(i).area*data_point_vector.at(i).nx;                
-                
-            }
+        float pressure_averaging_counter = 0;
 
+        for (int i=0;i<data_point_vector.size(); ++i){            
+            if(data_point_vector.at(i).outsign>0){
+                frontal_area+=data_point_vector.at(i).area*data_point_vector.at(i).nx; 
+            }
+            if(data_point_vector.at(i).outsign*data_point_vector.at(i).nx>0.001){
+                average_p += data_point_vector.at(i).pressure;
+                pressure_averaging_counter++;
+            }
         }
+        average_p/=pressure_averaging_counter;
+        
         frontal_area *= 2*pi;
         coeff_drag = 2*force_body_x/(free_stream_rho*frontal_area*pow(free_stream_speed,2));
         cout<<"Drag Coefficient:\n"<<  
               "   body frontal area    m2:"<<frontal_area<<"\n"<<
               "   free stream rho   kg/m3:"<<free_stream_rho<<"\n"<<
               "   free stream speed   m/s:"<<free_stream_speed<<"\n"<<
-              "   calculated Cd          :"<<coeff_drag<<"\n";
+              "   calculated Cd          :"<<coeff_drag<<"\n"<<
+              "   average pressure     Pa:"<<average_p<<"\n";
         
     }
 
