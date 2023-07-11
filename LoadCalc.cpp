@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
                 data_point _data_point;                                                 //temporary data_point to push_back into vector - destroyed after each iteration
 
            /* Import_Data_Line destroys the strng by erasing the number at the front
-            * This is messy but it is verboses and debuggable
+            * This is messy but it is verbose and debuggable
             * Order of reading has to be in the same order in data file - can't skip points
             */
                 _data_point.posx        = Import_Data_Line(dat_file_line);   
